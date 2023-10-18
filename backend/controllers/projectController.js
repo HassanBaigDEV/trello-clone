@@ -1,13 +1,13 @@
-import Project from '../models/project.js';
-import List from '../models/list.js';
-import Label from '../models/label.js';
-import Task from '../models/task.js';
-import User from '../models/user.js';
-import Message from '../models/message.js';
-import asyncHandler from 'express-async-handler';
-import mongoose from 'mongoose';
-import initialLabels from '../utils/labelsData.js';
-import { populateLists, taskPopulation } from '../utils/utilFunctions.js';
+import Project from "../models/project.js";
+import List from "../models/list.js";
+import Label from "../models/label.js";
+import Task from "../models/task.js";
+import User from "../models/user.js";
+import Message from "../models/message.js";
+import asyncHandler from "express-async-handler";
+import mongoose from "mongoose";
+import initialLabels from "../utils/labelsData.js";
+import { populateLists, taskPopulation } from "../utils/utilFunctions.js";
 
 // @desc    Create Project
 // @route   POST /api/projects/
@@ -29,22 +29,22 @@ const createProject = asyncHandler(async (req, res) => {
     lists: [
       {
         _id: new mongoose.Types.ObjectId(),
-        title: 'To Do',
+        title: "To Do",
         tasks: [],
       },
       {
         _id: new mongoose.Types.ObjectId(),
-        title: 'In Progress',
+        title: "In Progress",
         tasks: [],
       },
       {
         _id: new mongoose.Types.ObjectId(),
-        title: 'To Review',
+        title: "To Review",
         tasks: [],
       },
       {
         _id: new mongoose.Types.ObjectId(),
-        title: 'Finished',
+        title: "Finished",
         tasks: [],
       },
     ],
@@ -73,7 +73,7 @@ const createProject = asyncHandler(async (req, res) => {
       $set: {
         [`projectsThemes.${createdProject._id}`]: {
           background,
-          mainColor: '#00bcd4',
+          mainColor: "#00bcd4",
         },
       },
     }
@@ -89,14 +89,14 @@ const createProject = asyncHandler(async (req, res) => {
 const getProjectData = asyncHandler(async (req, res) => {
   const { projectId } = req.params;
   const project = await Project.findOne({ _id: projectId }).populate({
-    path: 'users.user',
-    select: 'username email profilePicture',
+    path: "users.user",
+    select: "username email profilePicture",
   });
   const labels = await Label.findOne({ projectId });
   const lists = await populateLists(projectId);
   const messages = await Message.find({ projectId }).populate({
-    path: 'user',
-    select: 'username profilePicture',
+    path: "user",
+    select: "username profilePicture",
   });
 
   const userPermissions = project.users.find((user) =>
@@ -121,7 +121,7 @@ const getTask = asyncHandler(async (req, res) => {
   if (task) res.status(200).json(task);
   else {
     res.status(404);
-    throw new Error('Task not found');
+    throw new Error("Task not found");
   }
 });
 

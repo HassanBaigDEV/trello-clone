@@ -1,46 +1,48 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
   Route,
   Switch,
-} from 'react-router-dom';
+} from "react-router-dom";
 
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
 import {
   getUpdatedNotifications,
   getUserData,
   logout,
-} from './redux/actions/userActions';
+} from "./redux/actions/userActions";
 import {
   USER_DATA_UPDATE,
   USER_REMOVED,
-} from './redux/constants/userConstants';
+} from "./redux/constants/userConstants";
 
 import {
   unstable_createMuiStrictModeTheme as createMuiTheme,
   CssBaseline,
   LinearProgress,
   MuiThemeProvider,
-} from '@material-ui/core';
+} from "@material-ui/core";
 
-import themeFile from './util/theme';
-import Home from './components/pages/Home';
-import Login from './components/pages/Login';
-import Register from './components/pages/Register';
-import Layout from './components/layout/Layout';
-import ParticlesBackground from './components/ParticlesBackground';
-import Confirm from './components/pages/Confirm';
-import Boards from './components/pages/Boards';
-import Project from './components/pages/Project';
-import ProjectJoinPage from './components/pages/ProjectJoinPage';
-import NotFoundPage from './components/pages/NotFoundPage';
+import themeFile from "./util/theme";
+import Home from "./components/pages/Home";
+import Login from "./components/pages/Login";
+import Register from "./components/pages/Register";
+import Layout from "./components/layout/Layout";
+import ParticlesBackground from "./components/ParticlesBackground";
+import Confirm from "./components/pages/Confirm";
+import Boards from "./components/pages/Boards";
+import Project from "./components/pages/Project";
+import ProjectJoinPage from "./components/pages/ProjectJoinPage";
+import NotFoundPage from "./components/pages/NotFoundPage";
+import { io } from "socket.io-client";
+import { SOCKET_CONNECT_SUCCESS } from "../src/redux/constants/socketConstants";
 
 const theme = createMuiTheme(themeFile);
 
 const PrivateRoute = ({ children, path, exact = false, userInfo }) => (
   <Route path={path} exact={exact}>
-    {userInfo ? children : <Redirect to='/signin' />}
+    {userInfo ? children : <Redirect to="/signin" />}
   </Route>
 );
 
@@ -52,18 +54,28 @@ const App = () => {
   useEffect(() => {
     if (userInfo && Object.keys(userInfo).length === 1)
       dispatch(getUserData(userInfo.token));
+    const socket = io.connect("http://localhost:5000", {
+      transports: ["websocket", "polling", "flashsocket"],
+      auth: {
+        authorization: `Bearer ${userInfo?.token}`,
+      },
+    });
+    socket.on("connect", () => {
+      dispatch({ type: SOCKET_CONNECT_SUCCESS, payload: socket });
+    });
+    socket.connect();
   }, [dispatch, userInfo]);
 
   useEffect(() => {
     if (socket) {
-      socket.on('notifications-updated', () =>
+      socket.on("notifications-updated", () =>
         dispatch(getUpdatedNotifications())
       );
-      socket.on('user-updated', (data) =>
+      socket.on("user-updated", (data) =>
         dispatch({ type: USER_DATA_UPDATE, payload: data })
       );
-      socket.on('auth-error', () => dispatch(logout()));
-      socket.on('user-removed-from-project', (data) =>
+      socket.on("auth-error", () => dispatch(logout()));
+      socket.on("user-removed-from-project", (data) =>
         dispatch({ type: USER_REMOVED, payload: data })
       );
     }
@@ -77,50 +89,50 @@ const App = () => {
             <>
               <LinearProgress
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   left: 0,
-                  width: '100%',
+                  width: "100%",
                 }}
               />
             </>
           ) : (
             <>
               <Switch>
-                <Route exact path='/'>
+                <Route exact path="/">
                   <ParticlesBackground />
                   <Home />
                 </Route>
-                <Route exact path='/signin'>
+                <Route exact path="/signin">
                   <ParticlesBackground />
                   <Login />
                 </Route>
-                <Route exact path='/register'>
+                <Route exact path="/register">
                   <ParticlesBackground />
                   <Register />
                 </Route>
-                <Route exact path='/confirm/:id'>
+                <Route exact path="/confirm/:id">
                   <ParticlesBackground />
                   <Confirm />
                 </Route>
-                <PrivateRoute exact path='/boards' userInfo={userInfo}>
+                <PrivateRoute exact path="/boards" userInfo={userInfo}>
                   <ParticlesBackground />
                   <Boards />
                 </PrivateRoute>
                 <PrivateRoute
                   exact
-                  path='/project/:id/:taskId?'
+                  path="/project/:id/:taskId?"
                   userInfo={userInfo}
                 >
                   <Project />
                 </PrivateRoute>
                 <PrivateRoute
                   exact
-                  path='/invite/:projectId/:joinId'
+                  path="/invite/:projectId/:joinId"
                   userInfo={userInfo}
                 >
                   <ProjectJoinPage />
                 </PrivateRoute>
-                <Route exact path='*'>
+                <Route exact path="*">
                   <ParticlesBackground />
                   <NotFoundPage />
                 </Route>

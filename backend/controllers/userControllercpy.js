@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import Project from "../models/project.js";
 import Notification from "../models/notification.js";
-import EmailSecret from "../models/emailSecret.js";
+// import EmailSecret from "../models/emailSecret.js";
 import generateToken from "../utils/generateToken.js";
 import asyncHandler from "express-async-handler";
 import mongoose from "mongoose";
@@ -31,7 +31,6 @@ const authUser = asyncHandler(async (req, res) => {
       seenDate: null,
     });
 
-    console.log(user._doc);
     res.status(200).json({
       userInfo: {
         ...user._doc,
@@ -59,30 +58,31 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("User already exists");
   }
   try {
-    const emailSecretCode = new mongoose.Types.ObjectId();
+    // const emailSecretCode = new mongoose.Types.ObjectId();
     await User.create({
       username,
       email,
       password,
-      emailCode: emailSecretCode,
-      projectsThemes: {},
+
     });
-    await EmailSecret.create({
-      email,
-      code: emailSecretCode,
-    });
-    const mailOptions = {
-      from: process.env.EMAIL,
-      to: email,
-      subject: "Welcome to Project Manager, confirm your email to get started!",
-      text: "Welcome to the Project Manager!",
-      html: `<h1>Thank you for registering!</h1></br><p>To finish registration just click this link</p><span><a href='${process.env.URL}/confirm/${emailSecretCode}'> ${process.env.URL}/confirm/${emailSecretCode}</a></span>`,
-    };
-    await sendEmail(mailOptions);
-    res.status(200).json({
-      message:
-        "Confirmation email has been send to you. You can now sign in with your newly created account",
-    });
+    // await EmailSecret.create({
+    //   email,
+    //   code: emailSecretCode,
+    // });
+    // const mailOptions = {
+    //   from: process.env.EMAIL,
+    //   to: email,
+    //   subject: "Welcome to Project Manager, confirm your email to get started!",
+    //   text: "Welcome to the Project Manager!",
+    //   html: `<h1>Thank you for registering!</h1></br><p>To finish registration just click this link</p><span><a href='${process.env.URL}/confirm/${emailSecretCode}'> ${process.env.URL}/confirm/${emailSecretCode}</a></span>`,
+    // };
+    // await sendEmail(mailOptions);
+    // res.status(200).json({
+    //   message:
+    //     "Confirmation email has been send to you. You can now sign in with your newly created account",
+    // });
+    const newUser = await User.save();
+    res.status(201).json(newUser);
   } catch (err) {
     console.log(err);
     res.status(500);

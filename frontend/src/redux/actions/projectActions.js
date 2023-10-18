@@ -427,7 +427,7 @@ export const findUsersToInvite = (userData) => async (dispatch, getState) => {
   }
 };
 
-export const sendProjectInvitations = (users, callback) => (
+export const sendProjectInvitations = (user,projectId, callback) => async (
   dispatch,
   getState
 ) => {
@@ -436,11 +436,25 @@ export const sendProjectInvitations = (users, callback) => (
     projectGetData: { project },
   } = getState();
 
+  const config = {
+    headers: {
+      // Content-Type: 'application/json',
+      // Authorization: `Bearer ${user.token}`,
+    },
+  };
+  console.log(projectId)
+
+// console.log(user[0]._id);
+//   const { data } = await axios.post(`/api/projects/${projectId}/users`,
+//     {
+//      userId:user[0]._id
+//    }, config);
+
   socket.emit(
     'project-invite-users',
     {
       projectId: project._id,
-      users,
+      user,
     },
     callback
   );
@@ -530,6 +544,7 @@ export const taskFieldUpdate = (
   const {
     socketConnection: { socket },
   } = getState();
+  console.log("=========", socket);
   socket.emit(
     'task-field-update',
     { taskId, projectId, updatedData, fieldName },

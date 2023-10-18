@@ -311,6 +311,7 @@ export const socketTaskController = (io, socket) => {
   // @desc Update task's title, deadline or description
   socket.on('task-field-update', async (data, callback) => {
     const { projectId, taskId, updatedData, fieldName } = data;
+    console.log(data);
 
     const task = await taskPopulation(
       Task.findOneAndUpdate(

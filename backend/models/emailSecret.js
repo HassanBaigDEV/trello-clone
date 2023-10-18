@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const emailSecretSchema = mongoose.Schema(
   {
@@ -9,4 +9,4 @@ const emailSecretSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model('EmailSecret', emailSecretSchema);
+export default mongoose.model("EmailSecret", emailSecretSchema);

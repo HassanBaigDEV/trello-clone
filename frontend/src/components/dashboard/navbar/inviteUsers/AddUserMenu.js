@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 
-import { useDispatch } from 'react-redux';
+import { useDispatch } from "react-redux";
 import {
   findUsersToInvite,
   sendProjectInvitations,
-} from '../../../../redux/actions/projectActions';
+} from "../../../../redux/actions/projectActions";
 
 import {
   Button,
@@ -13,44 +13,45 @@ import {
   Popover,
   TextField,
   Typography,
-} from '@material-ui/core';
-import SearchMenu from './SearchMenu';
+} from "@material-ui/core";
+import SearchMenu from "./SearchMenu";
 
-import InviteLink from './InviteLink';
-import Loader from '../../../Loader';
+import InviteLink from "./InviteLink";
+import Loader from "../../../Loader";
+import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
 const useStyles = makeStyles((theme) => ({
   container: {
     width: 300,
-    outline: 'none',
+    outline: "none",
   },
   innerContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
     height: 250,
-    padding: '7px',
-    overflowY: 'auto',
+    padding: "7px",
+    overflowY: "auto",
   },
   header: {
     backgroundColor: theme.palette.primary.main,
-    padding: '2px 0',
-    textAlign: 'center',
-    borderBottom: 'none',
-    color: '#fff',
-    '& h6': { fontWeight: 700 },
+    padding: "2px 0",
+    textAlign: "center",
+    borderBottom: "none",
+    color: "#fff",
+    "& h6": { fontWeight: 700 },
   },
 
   usersContainer: {
-    padding: '4px 4px 0',
+    padding: "4px 4px 0",
     maxHeight: 80,
-    overflow: 'auto',
+    overflow: "auto",
     border: `2px solid ${theme.palette.primary.main}`,
     margin: 6,
     borderRadius: 4,
   },
   userChip: {
-    margin: '0 4px 4px 0',
+    margin: "0 4px 4px 0",
   },
 }));
 
@@ -58,15 +59,17 @@ const AddUserModal = ({ anchorEl, handleClose }) => {
   const dispatch = useDispatch();
   const [searchOpen, setSearchOpen] = useState(false);
   const [error, setError] = useState();
-  const [userData, setUserData] = useState('');
+  const [userData, setUserData] = useState("");
   const [usersToInvite, setUsersToInvite] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef();
   const classes = useStyles();
+  const projectId = window.location.pathname.split("/").at(-1);
+  console.log(projectId);
 
   const closeHandle = () => {
     setLoading(false);
-    setUserData('');
+    setUserData("");
     setUsersToInvite([]);
     setSearchOpen(false);
     handleClose();
@@ -75,7 +78,7 @@ const AddUserModal = ({ anchorEl, handleClose }) => {
   // when user stops typing then open SearchMenu
   useEffect(() => {
     const timeout =
-      userData.trim() !== '' &&
+      userData.trim() !== "" &&
       setTimeout(() => {
         dispatch(findUsersToInvite(userData));
         setSearchOpen(true);
@@ -101,7 +104,7 @@ const AddUserModal = ({ anchorEl, handleClose }) => {
   // adds user clicked in SearchMenu.js
   const addUserHandle = (userToAdd) => {
     setSearchOpen(false);
-    setUserData('');
+    setUserData("");
     setUsersToInvite((prev) => [...prev, userToAdd]);
     inputRef.current.focus();
   };
@@ -109,7 +112,8 @@ const AddUserModal = ({ anchorEl, handleClose }) => {
   const inviteUsersHandle = () => {
     if (usersToInvite.length > 0) {
       setLoading(true);
-      dispatch(sendProjectInvitations(usersToInvite, () => closeHandle()));
+      console.log(usersToInvite);
+      dispatch(sendProjectInvitations(usersToInvite,projectId, () => closeHandle()));
     }
   };
 
@@ -123,8 +127,8 @@ const AddUserModal = ({ anchorEl, handleClose }) => {
         onClose={closeHandle}
         getContentAnchorEl={null}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: "bottom",
+          horizontal: "right",
         }}
         PaperProps={{
           style: { borderTopLeftRadius: 8, borderTopRightRadius: 8 },
@@ -133,7 +137,7 @@ const AddUserModal = ({ anchorEl, handleClose }) => {
       >
         <div className={classes.container}>
           <div className={classes.header}>
-            <Typography variant='subtitle1'>Invite Users</Typography>
+            <Typography variant="subtitle1">Invite Users</Typography>
           </div>
 
           {usersToInvite.length > 0 && (
@@ -153,29 +157,29 @@ const AddUserModal = ({ anchorEl, handleClose }) => {
               <TextField
                 inputRef={inputRef}
                 className={classes.textfield}
-                name='user'
-                type='text'
-                label='User'
-                variant='outlined'
+                name="user"
+                type="text"
+                label="User"
+                variant="outlined"
                 value={userData}
                 style={{ marginBottom: 10 }}
                 fullWidth
-                onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
                 error={Boolean(error)}
                 helperText={error}
                 onChange={changeHandle}
-                margin='dense'
+                margin="dense"
                 onClick={(e) => e.preventDefault()}
                 inputProps={{
-                  autoComplete: 'off',
+                  autoComplete: "off",
                 }}
               />
               <InviteLink />
             </div>
             <Button
               onClick={inviteUsersHandle}
-              color='primary'
-              variant='contained'
+              color="primary"
+              variant="contained"
               fullWidth
               style={{ marginTop: 40 }}
               disabled={loading}

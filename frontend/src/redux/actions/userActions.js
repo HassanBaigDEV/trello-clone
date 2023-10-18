@@ -20,42 +20,44 @@ import {
   USER_PROJECT_BG_UPDATE_FAIL,
   USER_PROJECT_BG_UPDATE_SUCCESS,
   USER_PROJECT_BG_UPDATE_REQUEST,
-} from '../constants/userConstants';
+} from "../constants/userConstants";
 import {
   SOCKET_CONNECT_RESET,
   SOCKET_CONNECT_SUCCESS,
-} from '../constants/socketConstants';
-import axios from 'axios';
-import io from 'socket.io-client';
+} from "../constants/socketConstants";
+import axios from "axios";
+import io from "socket.io-client";
 
 export const login = (email, password) => async (dispatch) => {
   try {
     dispatch({ type: USER_LOGIN_REQUEST });
 
     const config = {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
-      '/api/users/login',
+      "/api/users/login",
       { email, password },
       config
     );
 
     // connect to socket server
-    const socket = io.connect(window && window.location.origin, {
-      transports: ['websocket', 'polling', 'flashsocket'],
+    const socket = io.connect("http://localhost:5000", {
+      transports: ["websocket", "polling", "flashsocket"],
       auth: {
         authorization: `Bearer ${data.userInfo.token}`,
       },
     });
-    socket.on('connect', () => {
+    console.log("socketsocketsocketsocketsocketsocketsocket", socket);
+    socket.on("connect", () => {
+      console.log("connect");
       dispatch({ type: SOCKET_CONNECT_SUCCESS, payload: socket });
       dispatch({ type: USER_LOGIN_SUCCESS, payload: data });
-      socket.emit('join-notifications', { room: data.userInfo._id });
+      socket.emit("join-notifications", { room: data.userInfo._id });
     });
 
     localStorage.setItem(
-      'userInfo',
+      "userInfo",
       JSON.stringify({ token: data.userInfo.token })
     );
   } catch (error) {
@@ -74,10 +76,10 @@ export const register = (username, email, password) => async (dispatch) => {
     dispatch({ type: USER_REGISTER_REQUEST });
 
     const config = {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
-      '/api/users/register',
+      "/api/users/register",
       { username, email, password },
       config
     );
@@ -98,7 +100,7 @@ export const logout = () => async (dispatch, getState) => {
     socketConnection: { socket },
   } = getState();
   // window.location = '/login'
-  localStorage.removeItem('userInfo');
+  localStorage.removeItem("userInfo");
   dispatch({ type: USER_LOGOUT });
   socket.disconnect();
   dispatch({ type: SOCKET_CONNECT_RESET });
@@ -109,10 +111,10 @@ export const confirmEmail = (emailCode) => async (dispatch) => {
     dispatch({ type: USER_EMAIL_CONFIRM_REQUEST });
 
     const config = {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
-      '/api/users/confirm',
+      "/api/users/confirm",
       { emailCode },
       config
     );
@@ -133,10 +135,10 @@ export const resendEmail = (emailCode) => async (dispatch) => {
     dispatch({ type: USER_EMAIL_RESEND_REQUEST });
 
     const config = {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
-      '/api/users/resend',
+      "/api/users/resend",
       { emailCode },
       config
     );
@@ -161,22 +163,26 @@ export const getUserData = (token) => async (dispatch) => {
         Authorization: `Bearer ${token}`,
       },
     };
-    const { data } = await axios.get('/api/users', config);
+    const { data } = await axios.get("/api/users", config);
 
     // connect to socket server
     const socket = io.connect(window && window.location.origin, {
-      transports: ['websocket', 'polling', 'flashsocket'],
+      transports: ["websocket", "polling", "flashsocket"],
       auth: {
         authorization: `Bearer ${data.userInfo.token}`,
       },
     });
-    socket.on('connect', () => {
-      dispatch({ type: SOCKET_CONNECT_SUCCESS, payload: socket });
-      dispatch({ type: USER_LOGIN_SUCCESS, payload: data });
-      socket.emit('join-notifications', { room: data.userInfo._id });
+
+    console.log("yyyyyyy", socket);
+    dispatch({ type: SOCKET_CONNECT_SUCCESS, payload: socket });
+    dispatch({ type: USER_LOGIN_SUCCESS, payload: data });
+    socket.on("connect", () => {
+      console.log("sockettttt");
+      socket.emit("join-notifications", { room: data.userInfo._id });
     });
   } catch (error) {
-    localStorage.removeItem('userInfo');
+    console.log(error);
+    localStorage.removeItem("userInfo");
     dispatch({ type: USER_LOGOUT });
   }
 };
@@ -191,29 +197,27 @@ export const getUpdatedNotifications = () => async (dispatch, getState) => {
       Authorization: `Bearer ${userInfo.token}`,
     },
   };
-  const { data } = await axios.get('/api/users/notifications', config);
+  const { data } = await axios.get("/api/users/notifications", config);
   dispatch({ type: USER_NOTIFICATIONS_UPDATE, payload: data.notifications });
 };
 
-export const discardNotification = (
-  notificationId,
-  notificationIndex,
-  callback
-) => async (dispatch, getState) => {
-  const {
-    userLogin: { userInfo, notifications },
-  } = getState();
+export const discardNotification =
+  (notificationId, notificationIndex, callback) =>
+  async (dispatch, getState) => {
+    const {
+      userLogin: { userInfo, notifications },
+    } = getState();
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${userInfo.token}`,
-    },
+    const config = {
+      headers: {
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    };
+    notifications.items.splice(notificationIndex, 1);
+    dispatch({ type: USER_NOTIFICATIONS_UPDATE, payload: notifications });
+    callback();
+    await axios.delete(`/api/users/${notificationId}`, config);
   };
-  notifications.items.splice(notificationIndex, 1);
-  dispatch({ type: USER_NOTIFICATIONS_UPDATE, payload: notifications });
-  callback();
-  await axios.delete(`/api/users/${notificationId}`, config);
-};
 
 export const markNotificationsSeen = () => async (dispatch, getState) => {
   const {
@@ -230,40 +234,38 @@ export const markNotificationsSeen = () => async (dispatch, getState) => {
   await axios.put(`/api/users/markNotifications`, {}, config);
 };
 
-export const updateProfilePicture = (formData) => async (
-  dispatch,
-  getState
-) => {
-  try {
-    const {
-      userLogin: { userInfo },
-    } = getState();
-    dispatch({ type: USER_PICTURE_UPDATE_REQUEST });
+export const updateProfilePicture =
+  (formData) => async (dispatch, getState) => {
+    try {
+      const {
+        userLogin: { userInfo },
+      } = getState();
+      dispatch({ type: USER_PICTURE_UPDATE_REQUEST });
 
-    const config = {
-      headers: {
-        'Content-type': 'multipart/form-data',
-        Authorization: `Bearer ${userInfo.token}`,
-      },
-    };
-    const { data } = await axios.post(`/api/images/upload`, formData, config);
-    if (data.image) {
-      const newImg = new Image();
-      newImg.src = data.image;
-      newImg.onload = () => {
-        dispatch({ type: USER_PICTURE_UPDATE_SUCCESS, payload: data.image });
+      const config = {
+        headers: {
+          "Content-type": "multipart/form-data",
+          Authorization: `Bearer ${userInfo.token}`,
+        },
       };
+      const { data } = await axios.post(`/api/images/upload`, formData, config);
+      if (data.image) {
+        const newImg = new Image();
+        newImg.src = data.image;
+        newImg.onload = () => {
+          dispatch({ type: USER_PICTURE_UPDATE_SUCCESS, payload: data.image });
+        };
+      }
+    } catch (error) {
+      dispatch({
+        type: USER_PICTURE_UPDATE_FAIL,
+        payload:
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+      });
     }
-  } catch (error) {
-    dispatch({
-      type: USER_PICTURE_UPDATE_FAIL,
-      payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message,
-    });
-  }
-};
+  };
 
 export const updateColorTheme = (color, projectId) => (dispatch, getState) => {
   const {
@@ -281,87 +283,82 @@ export const updateColorTheme = (color, projectId) => (dispatch, getState) => {
 
   const config = {
     headers: {
-      'Content-type': 'application/json',
+      "Content-type": "application/json",
       Authorization: `Bearer ${userInfo.token}`,
     },
   };
-  axios.put('/api/users/projectColorTheme', { projectId, color }, config);
+  axios.put("/api/users/projectColorTheme", { projectId, color }, config);
 };
 
-export const uploadProjectBgImage = (formData, projectId) => async (
-  dispatch,
-  getState
-) => {
-  try {
+export const uploadProjectBgImage =
+  (formData, projectId) => async (dispatch, getState) => {
+    try {
+      const {
+        userLogin: { userInfo },
+      } = getState();
+      dispatch({ type: USER_PROJECT_BG_UPDATE_REQUEST });
+
+      const config = {
+        headers: {
+          "Content-type": "multipart/form-data",
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+
+      const { data } = await axios.post(
+        `/api/images/upload/projectBgUpload/${projectId}`,
+        formData,
+        config
+      );
+
+      if (data.image) {
+        const newImg = new Image();
+        newImg.src = data.image;
+        newImg.onload = () => {
+          document.getElementById(
+            "project-background"
+          ).style.backgroundImage = `url(${data.image})`;
+          dispatch({ type: USER_PROJECT_BG_UPDATE_SUCCESS });
+          userInfo.projectsThemes[projectId].background = data.image;
+          dispatch({ type: USER_DATA_UPDATE, payload: userInfo });
+        };
+      }
+    } catch (error) {
+      dispatch({
+        type: USER_PROJECT_BG_UPDATE_FAIL,
+        payload:
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+      });
+    }
+  };
+
+export const updateProjectBgColor =
+  (background, projectId) => (dispatch, getState) => {
     const {
       userLogin: { userInfo },
     } = getState();
-    dispatch({ type: USER_PROJECT_BG_UPDATE_REQUEST });
+    document.getElementById("project-background").style.backgroundImage =
+      background;
+    if (userInfo.projectsThemes[projectId]) {
+      userInfo.projectsThemes[projectId].background = background;
+    } else
+      userInfo.projectsThemes = {
+        ...userInfo.projectsThemes,
+        [projectId]: { background: background },
+      };
+    dispatch({ type: USER_DATA_UPDATE, payload: userInfo });
 
     const config = {
       headers: {
-        'Content-type': 'multipart/form-data',
+        "Content-type": "application/json",
         Authorization: `Bearer ${userInfo.token}`,
       },
     };
-
-    const { data } = await axios.post(
-      `/api/images/upload/projectBgUpload/${projectId}`,
-      formData,
+    axios.put(
+      "/api/users/projectBgColorTheme",
+      { projectId, background },
       config
     );
-
-    if (data.image) {
-      const newImg = new Image();
-      newImg.src = data.image;
-      newImg.onload = () => {
-        document.getElementById(
-          'project-background'
-        ).style.backgroundImage = `url(${data.image})`;
-        dispatch({ type: USER_PROJECT_BG_UPDATE_SUCCESS });
-        userInfo.projectsThemes[projectId].background = data.image;
-        dispatch({ type: USER_DATA_UPDATE, payload: userInfo });
-      };
-    }
-  } catch (error) {
-    dispatch({
-      type: USER_PROJECT_BG_UPDATE_FAIL,
-      payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message,
-    });
-  }
-};
-
-export const updateProjectBgColor = (background, projectId) => (
-  dispatch,
-  getState
-) => {
-  const {
-    userLogin: { userInfo },
-  } = getState();
-  document.getElementById(
-    'project-background'
-  ).style.backgroundImage = background;
-  if (userInfo.projectsThemes[projectId]) {
-    userInfo.projectsThemes[projectId].background = background;
-  } else
-    userInfo.projectsThemes = {
-      ...userInfo.projectsThemes,
-      [projectId]: { background: background },
-    };
-  dispatch({ type: USER_DATA_UPDATE, payload: userInfo });
-
-  const config = {
-    headers: {
-      'Content-type': 'application/json',
-      Authorization: `Bearer ${userInfo.token}`,
-    },
   };
-  axios.put(
-    '/api/users/projectBgColorTheme',
-    { projectId, background },
-    config
-  );
-};

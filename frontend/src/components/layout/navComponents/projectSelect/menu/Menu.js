@@ -64,15 +64,15 @@ const Menu = ({ anchorEl, setAnchorEl }) => {
         <Paper className={classes.container}>
           {!loading &&
           userInfo &&
-          Object.keys(userInfo).length !== 1 &&
-          (projectsJoined.length !== 0 || projectsCreated.length !== 0) ? (
+          Object?.keys(userInfo)?.length !== 1 &&
+          (projectsJoined?.length !== 0 || projectsCreated?.length !== 0) ? (
             <>
-              {projectsCreated.length !== 0 && (
+              {projectsCreated?.length !== 0 && (
                 <>
                   <div className={classes.section}>
                     <Typography variant='h6'>Owned Projects</Typography>
                   </div>
-                  {projectsCreated.map((project) => (
+                  {projectsCreated?.map((project) => (
                     <div key={project._id}>
                       <ProjectMenuItem
                         project={project}
@@ -82,12 +82,12 @@ const Menu = ({ anchorEl, setAnchorEl }) => {
                   ))}
                 </>
               )}
-              {projectsJoined.length !== 0 && (
+              {projectsJoined?.length !== 0 && (
                 <>
                   <div className={classes.section}>
                     <Typography variant='h6'>Joined Projects</Typography>
                   </div>
-                  {projectsJoined.map((project) => (
+                  {projectsJoined?.map((project) => (
                     <div key={project._id}>
                       <ProjectMenuItem
                         project={project}

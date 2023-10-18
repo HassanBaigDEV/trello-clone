@@ -5,10 +5,13 @@ import Project from '../models/project.js';
 
 const authorizeSocketConnection = asyncHandler(async (data, socket) => {
   const token = data.authorization.split(' ')[1];
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  const user = await User.findById(decoded.id).select('-password');
-  if (!user) socket.emit('auth-error');
-  else socket.user = user;
+  if (token !== 'undefined') {
+  console.log("tokennn", token, data);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) socket.emit('auth-error');
+    else socket.user = user;
+  }
 });
 
 const levelOneAuth = asyncHandler(async (data, socket) => {

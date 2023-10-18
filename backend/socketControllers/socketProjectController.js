@@ -22,10 +22,10 @@ export const socketProjectController = (io, socket) => {
 
   // @desc Send invitation to a project
   socket.on('project-invite-users', async (data, callback) => {
-    const { projectId, users } = data;
+    const { projectId, user } = data;
     const project = await Project.findById(projectId);
-    if (users.length > 0) {
-      const promise = users.map(async (user) => {
+    if (user?.length > 0) {
+      const promise = user.map(async (user) => {
         const inviteNotification = new Notification({
           type: 'Project Invitation',
           project: projectId,

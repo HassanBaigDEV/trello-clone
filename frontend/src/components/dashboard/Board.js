@@ -23,9 +23,9 @@ const Board = () => {
   const { socket } = useSelector((state) => state.socketConnection);
   const { task } = useSelector((state) => state.projectSetTask);
   const dispatch = useDispatch();
-
   useEffect(() => {
     socket.on('new-task', (data) => {
+      console.log("herrerer")
       dispatch({ type: PROJECT_DATA_ADD_TASK, payload: data });
     });
     socket.on('lists-update', (data) => {
