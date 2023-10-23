@@ -1,10 +1,11 @@
-# Project-Manager
-![ProjectManager](https://user-images.githubusercontent.com/60189847/111695768-bb2e1080-8833-11eb-81e4-ae98c8fc2284.jpg)
+<!-- # Project-Manager
+
+<!-- ![ProjectManager](https://user-images.githubusercontent.com/60189847/111695768-bb2e1080-8833-11eb-81e4-ae98c8fc2284.jpg)
 Project management web app. Built using [React JS](https://reactjs.org/) with [Redux](https://redux.js.org/) and [Material-UI](https://material-ui.com/) on frontend and for backend: [Node JS](https://nodejs.org/) with [Express](https://expressjs.com/), [MongoDB](http://mongodb.com/) for database and real-time functionality thanks to [Socket.IO](https://socket.io/).
 
 ## [live demo](https://project--manager.up.railway.app/)
-(You don't have to confirm email in order to log in)
-
+(You don't have to confirm email in order to log in) -->
+<!-- 
 
 # Features
    - Fully responsive 
@@ -41,4 +42,4 @@ Project management web app. Built using [React JS](https://reactjs.org/) with [R
             - Watch task to receive notifications
             - Transfer to different list
             - Archive and delete task
-            - Add, edit and delete comments 
+            - Add, edit and delete comments  --> -->
