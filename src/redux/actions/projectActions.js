@@ -436,12 +436,12 @@ export const sendProjectInvitations = (user,projectId, callback) => async (
     projectGetData: { project },
   } = getState();
 
-  const config = {
-    headers: {
-      // Content-Type: 'application/json',
-      // Authorization: `Bearer ${user.token}`,
-    },
-  };
+  // const config = {
+  //   headers: {
+  //     // Content-Type: 'application/json',
+  //     // Authorization: `Bearer ${user.token}`,
+  //   },
+  // };
   console.log(projectId)
 
 // console.log(user[0]._id);
