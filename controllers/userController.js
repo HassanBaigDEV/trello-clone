@@ -51,91 +51,44 @@ const authUser = asyncHandler(async (req, res) => {
 // @desc    Register a new user & get token
 // @route   POST /api/users
 // @access  Public
-// const registerUser = asyncHandler(async (req, res) => {
-//   const { username, email, password } = req.body;
-//   const userExists = await User.findOne({ email });
-//   if (userExists) {
-//     res.status(400);
-//     throw new Error("User already exists");
-//   }
-//   try {
-//     const emailSecretCode = new mongoose.Types.ObjectId();
-//     await User.create({
-//       username,
-//       email,
-//       password,
-//       emailCode: emailSecretCode,
-//       projectsThemes: {},
-//     });
-//     await EmailSecret.create({
-//       email,
-//       code: emailSecretCode,
-//     });
-//     const mailOptions = {
-//       from: process.env.EMAIL,
-//       to: email,
-//       subject: "Welcome to Project Manager, confirm your email to get started!",
-//       text: "Welcome to the Project Manager!",
-//       html: `<h1>Thank you for registering!</h1></br><p>To finish registration just click this link</p><span><a href='${process.env.URL}/confirm/${emailSecretCode}'> ${process.env.URL}/confirm/${emailSecretCode}</a></span>`,
-//     };
-//     await sendEmail(mailOptions);
-//     res.status(200).json({
-//       message:
-//         "Confirmation email has been send to you. You can now sign in with your newly created account",
-//     });
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500);
-//     throw new Error("Registering failed");
-//   }
-// });
-
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
-
-  // Validate request body
-  if (!username || !email || !password) {
-    res.status(400);
-    throw new Error("Please provide all required fields");
-  }
-
-  // Check if user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
     res.status(400);
     throw new Error("User already exists");
   }
-
   try {
     const emailSecretCode = new mongoose.Types.ObjectId();
-
-    // Create new user
-    const user = await User.create({
+    await User.create({
       username,
       email,
       password,
       emailCode: emailSecretCode,
       projectsThemes: {},
     });
-
-    // Create email secret
     await EmailSecret.create({
       email,
       code: emailSecretCode,
     });
-
-    res.status(201).json({
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      emailCode: user.emailCode,
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "Welcome to Project Manager, confirm your email to get started!",
+      text: "Welcome to the Project Manager!",
+      html: `<h1>Thank you for registering!</h1></br><p>To finish registration just click this link</p><span><a href='${process.env.URL}/confirm/${emailSecretCode}'> ${process.env.URL}/confirm/${emailSecretCode}</a></span>`,
+    };
+    await sendEmail(mailOptions);
+    res.status(200).json({
+      message:
+        "Confirmation email has been send to you. You can now sign in with your newly created account",
     });
-  } catch (error) {
+  } catch (err) {
+    console.log(err);
     res.status(500);
-    throw new Error("Server error: " + error.message);
+    throw new Error("Registering failed");
   }
 });
-
 
 // @desc    Confrim Email
 // @route   POST /api/users/email
