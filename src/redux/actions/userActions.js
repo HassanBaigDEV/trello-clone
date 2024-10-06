@@ -28,6 +28,8 @@ import {
 import axios from "axios";
 import io from "socket.io-client";
 
+const BASE_URL = "https://trello-clone-production-1236.up.railway.app";
+
 export const login = (email, password) => async (dispatch) => {
   try {
     dispatch({ type: USER_LOGIN_REQUEST });
@@ -36,13 +38,13 @@ export const login = (email, password) => async (dispatch) => {
       headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
-      "/api/users/login",
+      `${BASE_URL}/api/users/login`,
       { email, password },
       config
     );
 
     // connect to socket server
-    const socket = io.connect("http://trello-clone-production-1236.up.railway.app:5000", {
+    const socket = io.connect(BASE_URL, {
       transports: ["websocket", "polling", "flashsocket"],
       auth: {
         authorization: `Bearer ${data.userInfo.token}`,
@@ -78,19 +80,28 @@ export const register = (username, email, password) => async (dispatch) => {
     const config = {
       headers: { "Content-Type": "application/json" },
     };
-    const { data } = await axios.post(
-      "/api/users/register",
-      { username, email, password },
-      config
-    );
+
+    console.log("register");
+
+    const response = await fetch(`${BASE_URL}/api/users/register`, {
+      method: "POST",
+      headers: config.headers,
+      body: JSON.stringify({ username, email, password }),
+    });
+
+    if (!response.ok) {
+      console.log(response);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+
     dispatch({ type: USER_REGISTER_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: USER_REGISTER_FAIL,
-      payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message,
+      payload: error.message || "Registration failed",
     });
   }
 };
@@ -99,7 +110,6 @@ export const logout = () => async (dispatch, getState) => {
   const {
     socketConnection: { socket },
   } = getState();
-  // window.location = '/login'
   localStorage.removeItem("userInfo");
   dispatch({ type: USER_LOGOUT });
   socket.disconnect();
@@ -114,7 +124,7 @@ export const confirmEmail = (emailCode) => async (dispatch) => {
       headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
-      "/api/users/confirm",
+      `${BASE_URL}/api/users/confirm`,
       { emailCode },
       config
     );
@@ -138,7 +148,7 @@ export const resendEmail = (emailCode) => async (dispatch) => {
       headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.post(
-      "/api/users/resend",
+      `${BASE_URL}/api/users/resend`,
       { emailCode },
       config
     );
@@ -163,10 +173,9 @@ export const getUserData = (token) => async (dispatch) => {
         Authorization: `Bearer ${token}`,
       },
     };
-    const { data } = await axios.get("/api/users", config);
+    const { data } = await axios.get(`${BASE_URL}/api/users`, config);
 
-    // connect to socket server
-    const socket = io.connect(window && window.location.origin, {
+    const socket = io.connect(BASE_URL, {
       transports: ["websocket", "polling", "flashsocket"],
       auth: {
         authorization: `Bearer ${data.userInfo.token}`,
@@ -197,7 +206,10 @@ export const getUpdatedNotifications = () => async (dispatch, getState) => {
       Authorization: `Bearer ${userInfo.token}`,
     },
   };
-  const { data } = await axios.get("/api/users/notifications", config);
+  const { data } = await axios.get(
+    `${BASE_URL}/api/users/notifications`,
+    config
+  );
   dispatch({ type: USER_NOTIFICATIONS_UPDATE, payload: data.notifications });
 };
 
@@ -216,7 +228,7 @@ export const discardNotification =
     notifications.items.splice(notificationIndex, 1);
     dispatch({ type: USER_NOTIFICATIONS_UPDATE, payload: notifications });
     callback();
-    await axios.delete(`/api/users/${notificationId}`, config);
+    await axios.delete(`${BASE_URL}/api/users/${notificationId}`, config);
   };
 
 export const markNotificationsSeen = () => async (dispatch, getState) => {
@@ -231,7 +243,7 @@ export const markNotificationsSeen = () => async (dispatch, getState) => {
   };
   notifications.newNotificationsCount = 0;
   dispatch({ type: USER_NOTIFICATIONS_UPDATE, payload: notifications });
-  await axios.put(`/api/users/markNotifications`, {}, config);
+  await axios.put(`${BASE_URL}/api/users/markNotifications`, {}, config);
 };
 
 export const updateProfilePicture =
@@ -248,7 +260,11 @@ export const updateProfilePicture =
           Authorization: `Bearer ${userInfo.token}`,
         },
       };
-      const { data } = await axios.post(`/api/images/upload`, formData, config);
+      const { data } = await axios.post(
+        `${BASE_URL}/api/images/upload`,
+        formData,
+        config
+      );
       if (data.image) {
         const newImg = new Image();
         newImg.src = data.image;
@@ -287,7 +303,11 @@ export const updateColorTheme = (color, projectId) => (dispatch, getState) => {
       Authorization: `Bearer ${userInfo.token}`,
     },
   };
-  axios.put("/api/users/projectColorTheme", { projectId, color }, config);
+  axios.put(
+    `${BASE_URL}/api/users/projectColorTheme`,
+    { projectId, color },
+    config
+  );
 };
 
 export const uploadProjectBgImage =
@@ -306,7 +326,7 @@ export const uploadProjectBgImage =
       };
 
       const { data } = await axios.post(
-        `/api/images/upload/projectBgUpload/${projectId}`,
+        `${BASE_URL}/api/images/upload/projectBgUpload/${projectId}`,
         formData,
         config
       );
@@ -315,12 +335,10 @@ export const uploadProjectBgImage =
         const newImg = new Image();
         newImg.src = data.image;
         newImg.onload = () => {
-          document.getElementById(
-            "project-background"
-          ).style.backgroundImage = `url(${data.image})`;
-          dispatch({ type: USER_PROJECT_BG_UPDATE_SUCCESS });
-          userInfo.projectsThemes[projectId].background = data.image;
-          dispatch({ type: USER_DATA_UPDATE, payload: userInfo });
+          dispatch({
+            type: USER_PROJECT_BG_UPDATE_SUCCESS,
+            payload: data.image,
+          });
         };
       }
     } catch (error) {
@@ -333,32 +351,35 @@ export const uploadProjectBgImage =
       });
     }
   };
-
 export const updateProjectBgColor =
-  (background, projectId) => (dispatch, getState) => {
-    const {
-      userLogin: { userInfo },
-    } = getState();
-    document.getElementById("project-background").style.backgroundImage =
-      background;
-    if (userInfo.projectsThemes[projectId]) {
-      userInfo.projectsThemes[projectId].background = background;
-    } else
-      userInfo.projectsThemes = {
-        ...userInfo.projectsThemes,
-        [projectId]: { background: background },
-      };
-    dispatch({ type: USER_DATA_UPDATE, payload: userInfo });
+  (color, projectId) => async (dispatch, getState) => {
+    try {
+      const {
+        userLogin: { userInfo },
+      } = getState();
+      dispatch({ type: USER_PROJECT_BG_UPDATE_REQUEST });
 
-    const config = {
-      headers: {
-        "Content-type": "application/json",
-        Authorization: `Bearer ${userInfo.token}`,
-      },
-    };
-    axios.put(
-      "/api/users/projectBgColorTheme",
-      { projectId, background },
-      config
-    );
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+
+      const { data } = await axios.put(
+        `${BASE_URL}/api/users/projectColorTheme/${projectId}`,
+        { color },
+        config
+      );
+
+      dispatch({ type: USER_PROJECT_BG_UPDATE_SUCCESS, payload: data.color });
+    } catch (error) {
+      dispatch({
+        type: USER_PROJECT_BG_UPDATE_FAIL,
+        payload:
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+      });
+    }
   };

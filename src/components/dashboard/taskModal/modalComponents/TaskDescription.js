@@ -82,7 +82,7 @@ const TaskDescription = ({ task, userPermissions, disabled }) => {
     if (description !== task.description) {
       setLoading(true);
       const socket = io.connect(
-        "http://trello-clone-production-1236.up.railway.app:5000",
+        "http://trello-clone-production-1236.up.railway.app",
         {
           transports: ["websocket", "polling", "flashsocket"],
           auth: {

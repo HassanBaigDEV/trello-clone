@@ -54,12 +54,15 @@ const App = () => {
   useEffect(() => {
     if (userInfo && Object.keys(userInfo).length === 1)
       dispatch(getUserData(userInfo.token));
-    const socket = io.connect("http://trello-clone-production-1236.up.railway.app:5000", {
-      transports: ["websocket", "polling", "flashsocket"],
-      auth: {
-        authorization: `Bearer ${userInfo?.token}`,
-      },
-    });
+    const socket = io.connect(
+      "http://trello-clone-production-1236.up.railway.app",
+      {
+        transports: ["websocket", "polling", "flashsocket"],
+        auth: {
+          authorization: `Bearer ${userInfo?.token}`,
+        },
+      }
+    );
     socket.on("connect", () => {
       dispatch({ type: SOCKET_CONNECT_SUCCESS, payload: socket });
     });

@@ -1,18 +1,27 @@
-import React from "react";
-import Particles from "react-tsparticles";
-import PropTypes from "prop-types";
+import React from 'react';
+import { Particles } from 'react-tsparticles';
+import { loadFull } from 'tsparticles';  // For loading the full engine (optional)
 
 const ParticlesBackground = ({ disableMove }) => {
+  // Initialize the particle engine
+  const particlesInit = async (engine) => {
+    // Load the tsparticles full engine, add this only if you need the complete engine
+    await loadFull(engine);
+  };
+
   return (
     <Particles
-      style={{
-        background: "rgb(35, 39, 65)",
-        position: "fixed",
-        zIndex: -1,
-        top: 0,
-        left: 0,
-      }}
+      id="tsparticles"
+      init={particlesInit}
       options={{
+        fullScreen: {
+          enable: false, // If you want it only within a container and not fullscreen
+        },
+        background: {
+          color: {
+            value: 'rgb(35, 39, 65)', // Background color
+          },
+        },
         particles: {
           number: {
             value: 200,
@@ -22,40 +31,45 @@ const ParticlesBackground = ({ disableMove }) => {
           },
           size: {
             value: 3,
-            random: true,
-            anim: {
+            random: {
+              enable: true,
+            },
+            animation: {
               speed: 4,
-              size_min: 0.3,
+              minimumValue: 0.3,
             },
           },
-          line_linked: {
-            enable: false,
+          links: {
+            enable: false, // Equivalent to `line_linked` in react-particles-js
           },
           move: {
             enable: !disableMove,
             random: true,
             speed: 1,
-            direction: "top",
-            out_mode: "out",
+            direction: 'top',
+            outModes: {
+              default: 'out',
+            },
           },
           opacity: {
-            anim: {
-              enable: !disableMove,
-            },
             value: 0.4,
+            animation: {
+              enable: !disableMove,
+              speed: 1,
+              minimumValue: 0.1,
+            },
           },
         },
         interactivity: {
           events: {
-            onhover: {
+            onHover: {
               enable: false,
             },
-            onclick: {
+            onClick: {
               enable: false,
             },
           },
           modes: {
-            enable: false,
             bubble: {
               enable: false,
               distance: 100,
@@ -70,13 +84,18 @@ const ParticlesBackground = ({ disableMove }) => {
             },
           },
         },
+        detectRetina: true, // Enable retina detection for better quality on high-resolution screens
+      }}
+      style={{
+        position: 'fixed',
+        zIndex: -1,
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100vh',
       }}
     />
   );
-};
-
-ParticlesBackground.propTypes = {
-  disableMove: PropTypes.bool,
 };
 
 export default ParticlesBackground;
