@@ -1,5 +1,7 @@
 import React from "react";
 import Particles from "react-tsparticles";
+import PropTypes from "prop-types";
+
 const ParticlesBackground = ({ disableMove }) => {
   return (
     <Particles
@@ -10,7 +12,7 @@ const ParticlesBackground = ({ disableMove }) => {
         top: 0,
         left: 0,
       }}
-      params={{
+      options={{
         particles: {
           number: {
             value: 200,
@@ -30,7 +32,7 @@ const ParticlesBackground = ({ disableMove }) => {
             enable: false,
           },
           move: {
-            enable: disableMove ? false : true,
+            enable: !disableMove,
             random: true,
             speed: 1,
             direction: "top",
@@ -38,7 +40,7 @@ const ParticlesBackground = ({ disableMove }) => {
           },
           opacity: {
             anim: {
-              enable: disableMove ? false : true,
+              enable: !disableMove,
             },
             value: 0.4,
           },
@@ -71,6 +73,10 @@ const ParticlesBackground = ({ disableMove }) => {
       }}
     />
   );
+};
+
+ParticlesBackground.propTypes = {
+  disableMove: PropTypes.bool,
 };
 
 export default ParticlesBackground;
