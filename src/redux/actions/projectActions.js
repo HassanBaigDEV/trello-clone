@@ -26,7 +26,7 @@ import { BACKGROUND_COLORS } from "../../util/colorsContants";
 import axios from "axios";
 import deepcopy from "deepcopy";
 import { getTaskIndexes } from "../../util/utilFunctions";
-const BASE_URL = "https://trello-clone-production-1236.up.railway.app";
+const BASE_URL = process.env.BASE_URL;
 
 // Action to create a new project
 export const createProject =
