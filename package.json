@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://trello-clone-production-1236.up.railway.app",
+  "proxy": "http://localhost:5000",
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^38.0.1",
     "@ckeditor/ckeditor5-react": "^3.0.0",
