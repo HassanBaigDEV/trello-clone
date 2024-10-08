@@ -28,7 +28,7 @@ import {
 import axios from "axios";
 import io from "socket.io-client";
 
-const BASE_URL = "https://trello-clone-production-1236.up.railway.app";
+const BASE_URL = process.env.BASE_URL;
 
 export const login = (email, password) => async (dispatch) => {
   try {
